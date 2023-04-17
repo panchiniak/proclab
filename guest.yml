@@ -1,0 +1,75 @@
+#################################################
+# Gest configurations
+#################################################
+---
+- hosts: proc
+  become: yes
+  vars_files:
+    - group_vars/baremetal_hosts
+
+  tasks:
+    - name: Creates directory
+      become: yes
+      file:
+        path: /var/www/html/proclab
+        state: directory
+        owner: vagrant
+        group: vagrant
+        mode: 0775
+        recurse: yes
+
+    # - name: composer create-project drupal/recommended-project:9.5.3 proclab
+    #   shell: "composer create-project drupal/recommended-project:9.5.3 proclab"
+    #   args:
+    #     chdir: /var/www/html
+    #   register: out
+    # - debug: var=out.stdout_lines
+
+    # - name: composer require --dev drush/drush
+    #   shell: "composer require --dev drush/drush"
+    #   args:
+    #     chdir: /var/www/html/proclab
+    #   register: out
+    # - debug: var=out.stdout_lines
+
+    # - name: start database from scratch
+    #   shell: "drush site-install standard --db-url='mysql://root:root@localhost/proclab' --site-name=ProcLab --account-name=admin --account-pass=password --account-mail=mail@example.com -y"
+    #   args:
+    #     chdir: /var/www/html/proclab/proclab/web
+    #   register: out
+    # - debug: var=out.stdout_lines
+
+    # http://localhost:8181/proclab/proclab/web/core/INSTALL.txt
+    - name: Create settings.php
+      ansible.builtin.copy:
+        remote_src: yes
+        src: /var/www/html/proclab/proclab/web/sites/default/default.settings.php
+        dest: /var/www/html/proclab/proclab/web/sites/default/settings.php
+        owner: vagrant
+        group: vagrant
+        mode: 'a+w'
+
+    # http://localhost:8181/proclab/proclab/web/core/INSTALL.txt
+    - name: Add default http settings for clean url
+      become: yes
+      ansible.builtin.copy:
+        remote_src: yes
+        src: /vagrant/projects/proclab/assets/000-default.conf
+        dest: /etc/apache2/sites-available/000-default.conf
+        owner: root
+        group: root
+
+    - name: Create a new database with name 'proclab'
+      community.mysql.mysql_db:
+        name: proclab
+        state: present
+
+    - name: Create contrib folder
+      tags: [mkdir-contrib]
+      file:
+        path: /var/www/html/proclab/proclab/web/modules/contrib
+        state: directory
+        owner: vagrant
+        group: vagrant
+        mode: 0775
+        recurse: yes
