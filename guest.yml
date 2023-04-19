@@ -33,11 +33,19 @@
         mode: 0775
         recurse: yes
 
-    - name: composer create-project drupal/recommended-project:9.5.7 proclab --no-interaction
+    - name: composer create-project drupal/recommended-project:9.5.8 proclab --no-interaction
       become: no
-      shell: "composer create-project drupal/recommended-project:9.5.7 proclab --no-interaction"
+      shell: "composer create-project drupal/recommended-project:9.5.8 proclab --no-interaction"
       args:
         chdir: /var/www/html
+      register: out
+    - debug: var=out.stdout_lines
+
+    - name: composer remove drupal/core-project-message
+      become: no
+      shell: "composer remove drupal/core-project-message --no-interaction"
+      args:
+        chdir: /var/www/html/proclab
       register: out
     - debug: var=out.stdout_lines
 
@@ -70,7 +78,7 @@
         mode: 'a+w'
 
     - name: start database from scratch
-      shell: "drush site-install standard --db-url='mysql://root:root@localhost/proclab' --site-name=ProcLab --account-name=admin --account-pass=password --account-mail=mail@example.com -y"
+      shell: "./../vendor/drush/drush/drush site-install standard --db-url='mysql://root:root@localhost/proclab' --site-name=ProcLab --account-name=admin --account-pass=password --account-mail=mail@example.com -y"
       args:
         chdir: /var/www/html/proclab/web
       register: out
@@ -94,6 +102,14 @@
         owner: vagrant
         group: vagrant
         state: link
+
+    - name: chmod 744 /var/www/html/proclab/web/sites/default/files
+      become: yes
+      tags: [files-folder-permission]
+      shell: "chmod a+w -R /var/www/html/proclab/web/sites/default/files"
+      register: out
+    - debug: var=out.stdout_lines
+
 
     # remove search block
     # enable proc
