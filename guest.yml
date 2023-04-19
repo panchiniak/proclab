@@ -8,7 +8,22 @@
     - group_vars/baremetal_hosts
 
   tasks:
-    - name: Creates directory
+    - name: Add default http settings for clean url
+      become: yes
+      ansible.builtin.copy:
+        remote_src: yes
+        src: /vagrant/projects/proclab/assets/000-default.conf
+        dest: /etc/apache2/sites-available/000-default.conf
+        owner: root
+        group: root
+
+    - name: Restart apache
+      become: yes
+      shell: "/etc/init.d/apache2 restart"
+      register: out
+    - debug: var=out.stdout_lines
+
+    - name: Creates root directory of the web project
       become: yes
       file:
         path: /var/www/html/proclab
@@ -18,26 +33,31 @@
         mode: 0775
         recurse: yes
 
-    - name: composer create-project drupal/recommended-project:9.5.3 proclab
-      shell: "composer create-project drupal/recommended-project:9.5.3 proclab --no-interaction"
+    - name: composer create-project drupal/recommended-project:9.5.7 proclab --no-interaction
+      become: no
+      shell: "composer create-project drupal/recommended-project:9.5.7 proclab --no-interaction"
       args:
         chdir: /var/www/html
       register: out
     - debug: var=out.stdout_lines
 
-    # - name: composer require --dev drush/drush
-    #   shell: "composer require --dev drush/drush"
-    #   args:
-    #     chdir: /var/www/html/proclab
-    #   register: out
-    # - debug: var=out.stdout_lines
+    - name: composer require --dev drush/drush --no-interaction
+      become: no
+      shell: "composer require --dev drush/drush --no-interaction"
+      args:
+        chdir: /var/www/html/proclab
+      register: out
+    - debug: var=out.stdout_lines
 
-    # - name: start database from scratch
-    #   shell: "drush site-install standard --db-url='mysql://root:root@localhost/proclab' --site-name=ProcLab --account-name=admin --account-pass=password --account-mail=mail@example.com -y"
-    #   args:
-    #     chdir: /var/www/html/proclab/proclab/web
-    #   register: out
-    # - debug: var=out.stdout_lines
+    - name: Delete database with name 'proclab'
+      community.mysql.mysql_db:
+        name: proclab
+        state: absent
+
+    - name: Create a new database with name 'proclab'
+      community.mysql.mysql_db:
+        name: proclab
+        state: present
 
     # http://localhost:8181/proclab/proclab/web/core/INSTALL.txt
     - name: Create settings.php
@@ -49,20 +69,12 @@
         group: vagrant
         mode: 'a+w'
 
-    # http://localhost:8181/proclab/proclab/web/core/INSTALL.txt
-    - name: Add default http settings for clean url
-      become: yes
-      ansible.builtin.copy:
-        remote_src: yes
-        src: /vagrant/projects/proclab/assets/000-default.conf
-        dest: /etc/apache2/sites-available/000-default.conf
-        owner: root
-        group: root
-
-    - name: Create a new database with name 'proclab'
-      community.mysql.mysql_db:
-        name: proclab
-        state: present
+    - name: start database from scratch
+      shell: "drush site-install standard --db-url='mysql://root:root@localhost/proclab' --site-name=ProcLab --account-name=admin --account-pass=password --account-mail=mail@example.com -y"
+      args:
+        chdir: /var/www/html/proclab/web
+      register: out
+    - debug: var=out.stdout_lines
 
     - name: Create contrib folder
       tags: [mkdir-contrib]
@@ -74,7 +86,7 @@
         mode: 0775
         recurse: yes
 
-    - name: Create from proc in assets to the proclab drupal instalation
+    - name: Create link from proc in assets to the proclab drupal instalation
       tags: [symlink]
       ansible.builtin.file:
         src: /vagrant/projects/proclab/assets/proc
@@ -83,12 +95,5 @@
         group: vagrant
         state: link
 
-    # - name: Create contrib folder
-    #   tags: [mkdir-contrib]
-    #   file:
-    #     path: /var/www/html/proclab/proclab/web/modules/contrib
-    #     state: directory
-    #     owner: vagrant
-    #     group: vagrant
-    #     mode: 0775
-    #     recurse: yes
+    # remove search block
+    # enable proc
