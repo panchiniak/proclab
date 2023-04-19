@@ -6,4 +6,4 @@ ansible/vagrant/data/*
 ansible/vagrant/projects/*
 code
 .vscode/
-assets
+assets/proc
