@@ -18,12 +18,12 @@
         mode: 0775
         recurse: yes
 
-    # - name: composer create-project drupal/recommended-project:9.5.3 proclab
-    #   shell: "composer create-project drupal/recommended-project:9.5.3 proclab"
-    #   args:
-    #     chdir: /var/www/html
-    #   register: out
-    # - debug: var=out.stdout_lines
+    - name: composer create-project drupal/recommended-project:9.5.3 proclab
+      shell: "composer create-project drupal/recommended-project:9.5.3 proclab --no-interaction"
+      args:
+        chdir: /var/www/html
+      register: out
+    - debug: var=out.stdout_lines
 
     # - name: composer require --dev drush/drush
     #   shell: "composer require --dev drush/drush"
@@ -43,8 +43,8 @@
     - name: Create settings.php
       ansible.builtin.copy:
         remote_src: yes
-        src: /var/www/html/proclab/proclab/web/sites/default/default.settings.php
-        dest: /var/www/html/proclab/proclab/web/sites/default/settings.php
+        src: /var/www/html/proclab/web/sites/default/default.settings.php
+        dest: /var/www/html/proclab/web/sites/default/settings.php
         owner: vagrant
         group: vagrant
         mode: 'a+w'
@@ -67,9 +67,28 @@
     - name: Create contrib folder
       tags: [mkdir-contrib]
       file:
-        path: /var/www/html/proclab/proclab/web/modules/contrib
+        path: /var/www/html/proclab/web/modules/contrib
         state: directory
         owner: vagrant
         group: vagrant
         mode: 0775
         recurse: yes
+
+    - name: Create from proc in assets to the proclab drupal instalation
+      tags: [symlink]
+      ansible.builtin.file:
+        src: /vagrant/projects/proclab/assets/proc
+        dest: /var/www/html/proclab/web/modules/contrib/proc
+        owner: vagrant
+        group: vagrant
+        state: link
+
+    # - name: Create contrib folder
+    #   tags: [mkdir-contrib]
+    #   file:
+    #     path: /var/www/html/proclab/proclab/web/modules/contrib
+    #     state: directory
+    #     owner: vagrant
+    #     group: vagrant
+    #     mode: 0775
+    #     recurse: yes

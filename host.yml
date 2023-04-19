@@ -1,0 +1,24 @@
+#################################################
+# Host Configurations
+#
+# ansible-playbook -l host -i baremetal_hosts -u $(whoami) host.yml -K
+#################################################
+---
+- hosts: host
+  become: yes
+  vars_files:
+    - group_vars/baremetal_hosts
+
+  tasks:
+    - name: Create assets folder
+      become: no
+      file:
+        path: /home/{{baremetal_host_username}}/baremetal/ansible/vagrant/projects/proclab/assets
+        state: directory
+
+    - name: Clone proc version 9
+      become: no
+      ansible.builtin.git:
+        repo: git@github.com:panchiniak/proc.git
+        dest: /home/{{baremetal_host_username}}/baremetal/ansible/vagrant/projects/proclab/assets/proc
+        version: '9.x-1.x'
