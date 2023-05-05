@@ -33,9 +33,9 @@
         mode: 0775
         recurse: yes
 
-    - name: composer create-project drupal/recommended-project:9.5.8 proclab --no-interaction
+    - name: composer create-project drupal/recommended-project:10.0.8 proclab --no-interaction
       become: no
-      shell: "composer create-project drupal/recommended-project:9.5.8 proclab --no-interaction"
+      shell: "composer create-project drupal/recommended-project:10.0.8 proclab --no-interaction"
       args:
         chdir: /var/www/html
       register: out
@@ -110,6 +110,52 @@
       register: out
     - debug: var=out.stdout_lines
 
+    - name: composer require 'drupal/devel:5.0.2' --no-interaction
+      tags: [devel]
+      become: no
+      shell: "composer require 'drupal/devel:5.0.2' --no-interaction"
+      args:
+        chdir: /var/www/html/proclab
+      register: out
+    - debug: var=out.stdout_lines
 
-    # remove search block
-    # enable proc
+    - name: composer require 'drupal/devel_kint_extras:^1.1' --no-interaction
+      tags: [devel-kint-extras]
+      become: no
+      shell: "composer require 'drupal/devel_kint_extras:^1.1' --no-interaction"
+      args:
+        chdir: /var/www/html/proclab
+      register: out
+    - debug: var=out.stdout_lines
+
+# For php xdebug:
+# sudo apt-get install php-xdebug
+# Download xdebug-3.2.1.tgz (https://xdebug.org/files/xdebug-3.2.1.tgz)
+# Unpack the downloaded file with tar -xvzf xdebug-3.2.1.tgz
+# Run: cd xdebug-3.2.1
+# Run: ./configure
+# Run: make
+# Run: cp modules/xdebug.so /usr/lib/php/20210902
+# Add to the botton of /etc/php/8.1/apache2/php.ini and /etc/php/8.1/cli/php.ini:
+# zend_extension = xdebug
+# xdebug.remote_enable = 1
+# xdebug.remote_autostart = 1
+# xdebug.remote_log = /var/log/xdebug.log ; Logs xdebug outputs to a file. This is very useful for troubleshooting.
+# xdebug.remote_port= 9000 ; Port that development computer listens on.
+# xdebug.remote_host = 127.0.0.1 ; IP address of your development computer.
+
+# zend_extension = xdebug
+# [XDebug]
+# xdebug.mode=debug
+# xdebug.start_with_request=yes
+# xdebug.discover_client_host=1
+# xdebug.remote_handler=dbgp
+# xdebug.client_host=10.0.2.2
+# xdebug.client_port=9003
+# xdebug.remote_host=192.168.1.15
+# xdebug.remote_port=9003
+# xdebug.idekey=vsc
+
+# Restart the Apache Webserver
+
+# enable proc
