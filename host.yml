@@ -16,9 +16,9 @@
         path: /home/{{baremetal_host_username}}/baremetal/ansible/vagrant/projects/proclab/assets
         state: directory
 
-    - name: Clone proc version 9
+    - name: Clone latest proc
       become: no
       ansible.builtin.git:
-        repo: git@github.com:panchiniak/proc.git
+        repo: git@git.drupal.org:project/proc.git
         dest: /home/{{baremetal_host_username}}/baremetal/ansible/vagrant/projects/proclab/assets/proc
-        version: '9.x-1.x'
+        version: '10.0.x'

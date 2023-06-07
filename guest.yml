@@ -136,13 +136,6 @@
 # Run: ./configure
 # Run: make
 # Run: cp modules/xdebug.so /usr/lib/php/20210902
-# Add to the botton of /etc/php/8.1/apache2/php.ini and /etc/php/8.1/cli/php.ini:
-# zend_extension = xdebug
-# xdebug.remote_enable = 1
-# xdebug.remote_autostart = 1
-# xdebug.remote_log = /var/log/xdebug.log ; Logs xdebug outputs to a file. This is very useful for troubleshooting.
-# xdebug.remote_port= 9000 ; Port that development computer listens on.
-# xdebug.remote_host = 127.0.0.1 ; IP address of your development computer.
 
 # zend_extension = xdebug
 # [XDebug]
